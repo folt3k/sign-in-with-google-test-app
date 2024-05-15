@@ -29,7 +29,7 @@ export default function Home() {
 
   return (
     <>
-      <div id="googleSignInBtnWrapper" style={{ maxWidth: 240 }}></div>
+      <div id="googleSignInBtnWrapper" />
       <Script
         src="https://accounts.google.com/gsi/client"
         onReady={initGoogleSignIn}
