@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
-import { OAuth2Client } from "google-auth-library";
+import { OAuth2Client, TokenPayload } from "google-auth-library";
 import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
@@ -15,16 +15,7 @@ export default async function handler(
     const { idToken } = req.body;
 
     try {
-      const ticket = await authClient.verifyIdToken({
-        idToken: idToken,
-        audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-      });
-      const payload = ticket.getPayload();
-
-      if (!payload || !payload.sub || !payload.email) {
-        throw new Error("Invalid token");
-      }
-
+      const payload = await verifyIdToken(idToken);
       const userId = payload.sub;
       const userEmail = payload.email;
 
@@ -37,7 +28,7 @@ export default async function handler(
       if (!user) {
         user = await prisma.user.create({
           data: {
-            email: userEmail,
+            email: userEmail!,
             authProviderId: userId,
           },
         });
@@ -47,10 +38,21 @@ export default async function handler(
 
       res.status(200).json({ token });
     } catch (error) {
-      console.log(error);
       res.status(401).json({ message: "Login failed" });
     }
-  } else {
-    res.status(405).json({ message: "Method not allowed" });
   }
+}
+
+async function verifyIdToken(idToken: string): Promise<TokenPayload> {
+  const ticket = await authClient.verifyIdToken({
+    idToken: idToken,
+    audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+
+  if (!payload || !payload.sub || !payload.email) {
+    throw new Error("Invalid token");
+  }
+
+  return payload;
 }

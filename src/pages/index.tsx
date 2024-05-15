@@ -1,9 +1,6 @@
 import Script from "next/script";
-import { useEffect } from "react";
 
 export default function Home() {
-  useEffect(() => {}, []);
-
   const initGoogleSignIn = () => {
     google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
