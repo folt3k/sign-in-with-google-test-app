@@ -16,8 +16,7 @@ export default async function handler(
     try {
       const ticket = await authClient.verifyIdToken({
         idToken: idToken,
-        audience:
-          "679975214581-ibtp5leaap1qgcmdvg5flb8aop4g73jh.apps.googleusercontent.com",
+        audience: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
 

@@ -6,8 +6,7 @@ export default function Home() {
 
   const initGoogleSignIn = () => {
     google.accounts.id.initialize({
-      client_id:
-        "679975214581-ibtp5leaap1qgcmdvg5flb8aop4g73jh.apps.googleusercontent.com",
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
       callback: handleCredentialResponse,
     });
     google.accounts.id.renderButton(
