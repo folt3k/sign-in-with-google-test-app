@@ -2,6 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 import { OAuth2Client } from "google-auth-library";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const authClient = new OAuth2Client();
@@ -20,12 +21,12 @@ export default async function handler(
       });
       const payload = ticket.getPayload();
 
-      if (!payload || !payload["sub"] || !payload["email"]) {
+      if (!payload || !payload.sub || !payload.email) {
         throw new Error("Invalid token");
       }
 
-      const userId = payload["sub"];
-      const userEmail = payload["email"];
+      const userId = payload.sub;
+      const userEmail = payload.email;
 
       let user = await prisma.user.findFirst({
         where: {
@@ -42,7 +43,9 @@ export default async function handler(
         });
       }
 
-      res.status(200).json(user);
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!);
+
+      res.status(200).json({ token });
     } catch (error) {
       console.log(error);
       res.status(401).json({ message: "Login failed" });
